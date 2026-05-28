@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>17Personalities - 나의 성격 변화 알아보기</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --accent-color: #e63946;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            padding: 30px;
+            overflow: hidden;
+        }
+
+        /* 메인/홈 화면 */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 30px;
+        }
+
+        .welcome-img {
+            text-align: center;
+            font-size: 60px;
+            margin: 20px 0;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-align: center;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* 진행 바 */
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            height: 8px;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+
+        /* 질문 세션 */
+        .question-box h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #222;
+            word-break: keep-all;
+        }
+
+        .options-list {
+            list-style: none;
+        }
+
+        .option-item {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 15px;
+        }
+
+        .option-item:hover {
+            background: #edf2f7;
+            border-color: var(--primary-color);
+        }
+
+        /* 결과 화면 */
+        .result-title {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .mbti-badge {
+            text-align: center;
+            font-size: 42px;
+            font-weight: 900;
+            color: var(--primary-color);
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+
+        .comparison-box {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .comparison-item {
+            margin-bottom: 5px;
+        }
+
+        .comparison-item span.up { color: #e63946; font-weight: bold; }
+        .comparison-item span.down { color: #2a9d8f; font-weight: bold; }
+
+        .chart-container {
+            position: relative;
+            margin: 20px auto;
+            width: 100%;
+            height: 220px;
+        }
+
+        /* 극단치 솔루션 알림 상자 */
+        .warning-box {
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+            color: #c53030;
+            font-size: 14px;
+        }
+
+        .warning-box h4 {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="screen-home" class="screen active">
+        <h1>17Personalities</h1>
+        <p class="subtitle">나의 주기적인 성격 변화를 알아보세요.</p>
+        <div class="welcome-img">🕵️‍♂️📊</div>
+        <p style="text-align: center; font-size: 14px; color: #666; word-break: keep-all;">
+            이 검사는 실생활 상황 속 선택을 통해 나의 진짜 MBTI 변화 흐름을 추적하고, 균형 잡힌 성장을 돕는 맞춤형 가이드를 제공합니다.
+        </p>
+        <button class="btn" onclick="startTest()">검사 시작하기</button>
+    </div>
+
+    <div id="screen-quiz" class="screen">
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <div class="question-box">
+            <h2 id="question-text">질문 텍스트가 들어갈 자리입니다.</h2>
+            <ul class="options-list" id="options-list">
+                </ul>
+        </div>
+    </div>
+
+    <div id="screen-result" class="screen">
+        <div class="result-title">당신의 현재 MBTI 분석 결과</div>
+        <div id="mbti-badge" class="mbti-badge">XXXX</div>
+        
+        <div class="comparison-box">
+            <div style="font-weight: bold; margin-bottom: 8px; color: #475569;">📊 지난 검사 대비 변화량:</div>
+            <div id="comparison-details"></div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="mbtiChart" width="440" height="220"></canvas>
+        </div>
+
+        <div id="solution-container"></div>
+
+        <button class="btn" onclick="resetTest()">다시 테스트하기</button>
+    </div>
+</div>
+
+<script>
+    // 1. 질문 데이터 설계 (상황 제시형 + 4지선다)
+    // 각 선지는 특정 MBTI 지표의 점수를 부여함
+    const questions = [
+        {
+            q: "Q1. 연휴 동안 푹 쉬고 공부를 다시 시작하려고 한다. 내가 가장 먼저 할 일은?",
+            options: [
+                { text: "일단 책상에 앉아서 눈앞에 가장 먼저 보이는 책을 집어 들고 시작한다.", score: { P: 2 } },
+                { text: "마감 기한이 가장 임박한 순서대로 계획을 세우고, 소요 시간을 예상해서 플래너에 적은 뒤 시작한다.", score: { J: 2 } },
+                { text: "머릿속으로 오늘 대략 해야 할 일들을 가볍게 떠올려 본 뒤 손이 가는 것부터 시작한다.", score: { P: 1, J: 1 } },
+                { text: "조금만 더 쉬었다가 할 일을 고민해 본다.", score: { P: 1 } }
+            ]
+        },
+        {
+            q: "Q2. 조별 과제 활동 중, 한 팀원이 전혀 참여하지 않고 잠수를 탔을 때 나의 행동은?",
+            options: [
+                { text: "팀원의 사정이 있는지 물어보고, 힘들었던 마음에 공감하며 남은 분량을 같이 나누자고 독려한다.", score: { F: 2 } },
+                { text: "선생님께 즉시 말씀드리고, 이름 제외 및 역할 재분배 등 원칙적이고 효율적인 해결책을 찾는다.", score: { T: 2 } },
+                { text: "갈등이 생기는 게 싫어서 일단 내가 그 사람 분량까지 조용히 다 도맡아서 해버린다.", score: { F: 1 } },
+                { text: "단톡방에 팩트를 기반으로 진행 상황을 짚으며 왜 참여하지 않았는지 공적으로 따진다.", score: { T: 1 } }
+            ]
+        },
+        {
+            q: "Q3. 주말에 오랜만에 아무런 일정이 없는 자유 시간이 주어졌을 때 나는 주로 무엇을 할까?",
+            options: [
+                { text: "친한 친구들에게 바로 연락해서 밖에서 만나 코인노래방을 가거나 맛있는 것을 먹으러 간다.", score: { E: 2 } },
+                { text: "침대 위에서 밀린 웹툰이나 OTT 영상을 보며 혼자만의 완전한 충전 시간을 갖는다.", score: { I: 2 } },
+                { text: "가족들과 거실에서 대화를 나누거나 집 근처 산책을 가볍게 다녀온다.", score: { E: 1 } },
+                { text: "방 청소를 하거나 조용히 취미 생활을 즐기며 사색에 잠긴다.", score: { I: 1 } }
+            ]
+        },
+        {
+            q: "Q4. 담임 선생님이 내년도 학교 축제의 새로운 기획 아이디어를 자유롭게 제안해 보라고 하실 때 내 머릿속은?",
+            options: [
+                { text: "타 학교에서 이미 성공했던 안전하고 현실 가능성 높은 부스 활동 위주로 생각한다.", score: { S: 2 } },
+                { text: "한 번도 해보지 않은 완전히 기발하고 획기적인 우주나 가상현실 테마 같은 콘셉트를 상상한다.", score: { N: 2 } },
+                { text: "예산이 얼마나 들지, 준비 물품은 무엇일지 현실적인 제약 조건부터 계산해 본다.", score: { S: 1 } },
+                { text: "아이디어가 꼬리에 꼬리를 물고 이어져서 축제 전체가 영화처럼 펼쳐지는 상상을 한다.", score: { N: 1 } }
+            ]
+        }
+    ];
+
+    // 가상의 과거 검사 기록 데이터 (성격 변화 추적용 시뮬레이션 데이터)
+    const pastScores = { E: 45, I: 55, S: 40, N: 60, T: 35, F: 65, J: 85, P: 15 };
+
+    let currentQuestionIndex = 0;
+    let userScores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+
+    function startTest() {
+        changeScreen('screen-quiz');
+        currentQuestionIndex = 0;
+        userScores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+        showQuestion();
+    }
+
+    function changeScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function showQuestion() {
+        const progress = ((currentQuestionIndex) / questions.length) * 100;
+        document.getElementById('progress-bar').style.width = `${progress}%`;
+
+        if (currentQuestionIndex >= questions.length) {
+            showResult();
+            return;
+        }
+
+        const qData = questions[currentQuestionIndex];
+        document.getElementById('question-text').innerText = qData.q;
+        
+        const optionsList = document.getElementById('options-list');
+        optionsList.innerHTML = '';
+
+        qData.options.forEach(opt => {
+            const li = document.createElement('li');
+            li.className = 'option-item';
+            li.innerText = opt.text;
+            li.onclick = () => handleSelectOption(opt.score);
+            optionsList.appendChild(li);
+        });
+    }
+
+    function handleSelectOption(scoreObj) {
+        // 선택한 선지의 가중치를 사용자 점수에 합산
+        for (let key in scoreObj) {
+            userScores[key] += scoreObj[key];
+        }
+        currentQuestionIndex++;
+        showQuestion();
+    }
+
+    function showResult() {
+        changeScreen('screen-result');
+        document.getElementById('progress-bar').style.width = '100%';
+
+        // 각 성향 쌍의 비율(%) 계산 기본값 보정 포함
+        const calcPercentage = (val1, val2) => {
+            const total = val1 + val2;
+            if(total === 0) return 50;
+            return Math.round((val1 / total) * 100);
+        };
+
+        // 임의 보정 가중치를 더해 수치 밸런싱 수행 (질문수가 적으므로 다채로운 결과를 위해 보정)
+        const E_pct = calcPercentage(userScores.E + 2, userScores.I + 2);
+        const I_pct = 100 - E_pct;
+        const S_pct = calcPercentage(userScores.S + 1, userScores.N + 3);
+        const N_pct = 100 - S_pct;
+        const T_pct = calcPercentage(userScores.T + 2, userScores.F + 1);
+        const F_pct = 100 - T_pct;
+        const J_pct = calcPercentage(userScores.J + 3, userScores.P + 1);
+        const P_pct = 100 - J_pct;
+
+        // 최종 MBTI 글자 도출
+        const mbti = (E_pct >= I_pct ? 'E':'I') + 
+                     (S_pct >= N_pct ? 'S':'N') + 
+                     (T_pct >= F_pct ? 'T':'F') + 
+                     (J_pct >= P_pct ? 'J':'P');
+
+        document.getElementById('mbti-badge').innerText = mbti;
+
+        // 과거 대비 변화량 계산 및 출력 텍스트 생성
+        const diffE = E_pct - pastScores.E;
+        const diffS = S_pct - pastScores.S;
+        const diffT = T_pct - pastScores.T;
+        const diffJ = J_pct - pastScores.J;
+
+        const formatDiff = (label, diff) => {
+            if (diff > 0) return `<div class="comparison-item">${label} 지표가 지난번보다 <span class="up">${diff}% 증가</span>했습니다.</div>`;
+            if (diff < 0) return `<div class="comparison-item">${label} 지표가 지난번보다 <span class="down">${Math.abs(diff)}% 감소</span>했습니다.</div>`;
+            return `<div class="comparison-item">${label} 지표가 지난번과 동일합니다.</div>`;
+        };
+
+        let comparisonHTML = '';
+        comparisonHTML += formatDiff(E_pct >= I_pct ? '외향형(E)' : '내향형(I)', E_pct >= I_pct ? diffE : -diffE);
+        comparisonHTML += formatDiff(S_pct >= N_pct ? '감각형(S)' : '직관형(N)', S_pct >= N_pct ? diffS : -diffS);
+        comparisonHTML += formatDiff(T_pct >= F_pct ? '사고형(T)' : '감정형(F)', T_pct >= F_pct ? diffT : -diffT);
+        comparisonHTML += formatDiff(J_pct >= P_pct ? '판단형(J)' : '인식형(P)', J_pct >= P_pct ? diffJ : -diffJ);
+        
+        document.getElementById('comparison-details').innerHTML = comparisonHTML;
+
+        // 극단적인 수치 (90% 이상) 완화 가이드라인 출력 시스템
+        let solutionHTML = '';
+        if (E_pct >= 90) solutionHTML += createSolutionBox('외향성(E) 과열', '대외 활동이나 타인과의 소통에너지가 과도하게 쏠려있습니다. 가끔은 혼자 일기를 쓰거나 조용히 독서를 하며 내면을 정리하는 시간을 가져보세요.');
+        if (I_pct >= 90) solutionHTML += createSolutionBox('내향성(I) 심화', '혼자만의 생각에 너무 깊게 갇힐 위험이 있습니다. 하루에 한 번 친구에게 먼저 가벼운 안부 인사를 건네거나 조별 활동 시 적극적으로 의견을 한 마디 내보는 연습을 추천합니다.');
+        if (S_pct >= 90) solutionHTML += createSolutionBox('감각성(S) 편중', '현재 눈앞의 현실과 디테일에만 너무 몰두해 있을 수 있습니다. 가끔은 먼 미래의 버킷리스트를 작성해 보거나, 정답이 없는 자유로운 상상 활동을 해보세요.');
+        if (N_pct >= 90) solutionHTML += createSolutionBox('직관성(N) 과도', '아이디어와 상상은 풍부하지만 현실성이 결여될 수 있습니다. 오늘 당장 실행할 수 있는 아주 구체적인 작은 할 일 목록 3가지를 정리하고 실천해 보세요.');
+        if (T_pct >= 90) solutionHTML += createSolutionBox('사고성(T) 극단', '논리와 효율성만 지나치게 앞세워 주변 사람들의 감정에 무뎌졌을 가능성이 있습니다. 상대방의 고민을 들을 때 조언 대신 먼저 "많이 힘들었겠구나"라는 공감의 한마디를 건네보세요.');
+        if (F_pct >= 90) solutionHTML += createSolutionBox('감정성(F) 과부하', '현재 감정적인 파도가 높아서 타인의 시선이나 거절에 쉽게 상처받을 수 있는 상태입니다. 감정의 소용돌이를 다스리기 위해 하루 10분 조용한 음악과 함께 명상을 하거나 차분하게 사실 중심의 상황 노트를 작성해 보세요.');
+        if (J_pct >= 90) solutionHTML += createSolutionBox('판단성(J) 강박', '계획과 틀에 과도하게 의존하여 예상치 못한 변수가 생기면 심한 스트레스를 받을 수 있습니다. 하루 정도는 아예 무계획으로 흘러가는 대로 즉흥적인 하루를 보내며 유동성을 키워보세요.');
+        if (P_pct >= 90) solutionHTML += createSolutionBox('인식성(P) 과해이', '규칙성이나 규칙적인 마감 관리가 너무 느슨해져 학업 진도에 차질이 생길 수 있습니다. 알람 시계를 맞춰두고 뽀모도로 공부법(25분 집중, 5분 휴식)처럼 규칙적인 시간 프레임을 도입해 보세요.');
+
+        document.getElementById('solution-container').innerHTML = solutionHTML;
+
+        // HTML5 Canvas 기반 막대 그래프 시각화 드로잉
+        drawChart(E_pct, S_pct, T_pct, J_pct);
+    }
+
+    function createSolutionBox(title, content) {
+        return `
+            <div class="warning-box">
+                <h4>⚠️ 청소년 성장 균형 솔루션 [${title}]</h4>
+                <p>${content}</p>
+            </div>
+        `;
+    }
+
+    function drawChart(E, S, T, J) {
+        const canvas = document.getElementById('mbtiChart');
+        if (!canvas.getContext) return;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const data = [
+            { labelL: 'E', labelR: 'I', val: E },
+            { labelL: 'S', labelR: 'N', val: S },
+            { labelL: 'T', labelR: 'F', val: T },
+            { labelL: 'J', labelR: 'P', val: J }
+        ];
+
+        const startY = 30;
+        const rowGap = 45;
+        const barWidth = 260;
+        const barHeight = 16;
+        const startX = 90;
+
+        data.forEach((item, index) => {
+            const currentY = startY + (index * rowGap);
+
+            // 좌측 지표 이름
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(`${item.labelL} (${item.val}%)`, startX - 15, currentY + 13);
+
+            // 전체 바 배경 레일
+            ctx.fillStyle = '#e2e8f0';
+            ctx.beginPath();
+            ctx.roundRect(startX, currentY, barWidth, barHeight, 8);
+            ctx.fill();
+
+            // 활성화 점수 채우기 바 (좌측에서 비율만큼 참)
+            const filledWidth = (item.val / 100) * barWidth;
+            ctx.fillStyle = '#4a6fa5';
+            ctx.beginPath();
+            ctx.roundRect(startX, currentY, filledWidth, barHeight, 8);
+            ctx.fill();
+
+            // 우측 지표 이름
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'left';
+            ctx.fillText(`(${100 - item.val}%) ${item.labelR}`, startX + barWidth + 15, currentY + 13);
+        });
+    }
+
+    function resetTest() {
+        changeScreen('screen-home');
+    }
+</script>
+
+</body>
+</html>
